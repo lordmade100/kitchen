@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quotation - The Kitchen Wrap Co.</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: white;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      color: #12263A;
+    }
+    label {
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin: 10px 0 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+    button:hover {
+      background: #000000;
+      color: white;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      background: #f2f2f2;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    #customColorField {
+      display: none;
+    }
+    /* Modal styles */
+    #quoteModal {
+      display: none; 
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgb(0,0,0);
+      background-color: rgba(0,0,0,0.4);
+      padding-top: 60px;
+    }
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      max-width: 600px;
+      text-align: center;
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Custom alert */
+    #customAlert {
+      display:none;
+      position:fixed;
+      top:50%;
+      left:50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.7);
+      padding: 20px;
+      border-radius: 5px;
+      color: white;
+      text-align: center;
+      z-index: 1000;
+    }
+
+    #customAlert button {
+      background: #e91e63;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+ <!-- Pink App Bar with Logo, User, Logout -->
+<header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background-color: #e91e63; color: white; position: sticky; top: 0; z-index: 1000;">
+  <div style="display: flex; align-items: center; gap: 10px;">
+    <div style="background: white; border-radius: 50%; padding: 2px;">
+      <img src="https://i.postimg.cc/HnMbx6D3/90fd9d-c33c95646a3f4ea5a67a55f456784358-mv2-1.avif" alt="Logo" style="height: 36px; width: 36px; border-radius: 50%; object-fit: cover;">
+    </div>
+    <span style="font-size: 18px; font-weight: 500;">The Kitchen Wrap Co.</span>
+  </div>
+  <div style="display: flex; align-items: center; gap: 12px;">
+    <span id="userName" style="font-size: 14px; max-width: 140px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"></span>
+    <button onclick="logout()" style="background: white; color: #e91e63; padding: 6px 12px; border-radius: 5px; border: none; font-size: 14px; cursor: pointer;">Logout</button>
+  </div>
+</header>
+
+<script>
+  firebase.auth().onAuthStateChanged(user => {
+    if (user) {
+      document.getElementById("userName").textContent = user.displayName || user.email;
+    }
+  });
+</script>
+
+  <label for="service">Select a Service:</label>
+  <select id="service">
+    <option value="cupboardWrap">Wrapping of Cupboards</option>
+    <option value="cupboardRepair">Cupboard Repairs</option>
+    <option value="countertopWrap">Countertop Wrap</option>
+    <option value="wallpaper">Wallpaper Installation</option>
+    <option value="training">Architectural Wrapping Training</option>
+  </select>
+
+  <label for="area">Enter Area Size (m²) or Quantity:</label>
+  <input type="number" id="area" min="1" required />
+
+  <label for="color">Choose a Preferred Color:</label>
+  <select id="color" onchange="toggleCustomColorField()">
+    <option value="Matte White">Matte White</option>
+    <option value="Gloss Black">Gloss Black</option>
+    <option value="Wood Grain">Wood Grain</option>
+    <option value="Marble">Marble</option>
+    <option value="Custom">Custom (describe in notes)</option>
+  </select>
+
+ <label for="picture" style="font-weight: bold; color: #333; font-size: 16px;">Upload a Picture (Optional):</label>
+<input type="file" id="picture" accept="image/*" style="display: none;" onchange="previewImage(event)" />
+<div style="border: 2px dashed #e91e63; padding: 20px; border-radius: 8px; text-align: center; cursor: pointer; background: #f9f9f9; transition: background 0.3s ease;" onclick="document.getElementById('picture').click()">
+    <span style="font-size: 18px; color: #e91e63;">Click to Upload an Image</span>
+    <br>
+    <img id="imagePreview" src="" alt="Preview" style="max-width: 100%; max-height: 200px; margin-top: 10px; display: none;" />
+</div>
+
+  <div id="customColorField">
+    <label for="customColorDescription">Describe Custom Color:</label>
+    <input type="text" id="customColorDescription" placeholder="Enter custom color details" />
+  </div>
+
+  <button onclick="calculateQuote()">Get Quote</button>
+
+  <!-- Modal -->
+  <div id="quoteModal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Quotation Details</h2>
+      <div id="quoteDetails"></div>
+    </div>
+  </div>
+
+  <!-- Custom Alert -->
+  <div id="customAlert">
+    <p id="alertMessage"></p>
+    <button onclick="closeCustomAlert()">Close</button>
+  </div>
+
+  <script>
+    // Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyAxBT0oESoL62oz_x_Z8cMtdENWZPx4tMI",
+      authDomain: "pinotp-d7ef5.firebaseapp.com",
+      databaseURL: "https://pinotp-d7ef5-default-rtdb.firebaseio.com",
+      projectId: "pinotp-d7ef5",
+      storageBucket: "pinotp-d7ef5.appspot.com",
+      messagingSenderId: "708458917827",
+      appId: "1:708458917827:web:3af5e3544c97081bcf9776"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+
+    // Redirect if not logged in
+    firebase.auth().onAuthStateChanged(user => {
+      if (!user) {
+        window.location.href = "login.html";
+      }
+    });
+    
+    function previewImage(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const imgElement = document.getElementById('imagePreview');
+            imgElement.style.display = 'block';
+            imgElement.src = e.target.result;
+        };
+        if (file) reader.readAsDataURL(file);
+    }
+
+
+    let quoteData = {};
+    const logoBase64 = ""; // Optional: insert base64 logo
+
+    function toggleCustomColorField() {
+      const customField = document.getElementById("customColorField");
+      customField.style.display = document.getElementById("color").value === "Custom" ? "block" : "none";
+    }
+
+    function calculateQuote() {
+      const area = parseFloat(document.getElementById("area").value);
+      const service = document.getElementById("service").value;
+      const color = document.getElementById("color").value;
+      const customColor = document.getElementById("customColorDescription").value.trim();
+
+      if (color === "Custom" && !customColor) {
+        showCustomAlert("Please describe your custom color.");
+        return;
+      }
+
+      if (isNaN(area) || area <= 0) {
+        showCustomAlert("Please enter a valid area.");
+        return;
+      }
+
+      let pricePerUnit = 0;
+      let label = "";
+      let estimatedTime = 0;
+      let deliveryTime = area > 50 ? "3-5 days" : "1-2 days";
+
+      switch (service) {
+        case "cupboardWrap": pricePerUnit = 250; label = "Wrapping of Cupboards"; estimatedTime = area / 10; break;
+        case "cupboardRepair": pricePerUnit = 300; label = "Cupboard Repairs"; estimatedTime = area / 5; break;
+        case "countertopWrap": pricePerUnit = 350; label = "Countertop Wrap"; estimatedTime = area / 7; break;
+        case "wallpaper": pricePerUnit = 200; label = "Wallpaper Installation"; estimatedTime = area / 5; break;
+        case "training": pricePerUnit = 1000; label = "Architectural Wrapping Training"; estimatedTime = 4; break;
+      }
+
+      const subtotal = area * pricePerUnit;
+      const vat = subtotal * 0.15;
+      const total = subtotal + vat;
+
+      quoteData = {
+        label,
+        area,
+        pricePerUnit,
+        subtotal,
+        vat,
+        total,
+        color: color === "Custom" ? customColor : color,
+        estimatedTime,
+        deliveryTime,
+        timestamp: new Date().toISOString()
+      };
+
+      // Display the modal with quote details
+      showQuoteModal();
+    }
+
+    function showQuoteModal() {
+      const quoteDetails = ` 
+        <h3>Service: ${quoteData.label}</h3>
+        <p><strong>Color:</strong> ${quoteData.color}</p>
+        <p><strong>Area/Quantity:</strong> ${quoteData.area} m²</p>
+        <p><strong>Estimated Completion Time:</strong> ${quoteData.estimatedTime} hours</p>
+        <p><strong>Delivery Time:</strong> ${quoteData.deliveryTime}</p>
+        <p><strong>Subtotal:</strong> R ${quoteData.subtotal.toFixed(2)}</p>
+        <p><strong>VAT (15%):</strong> R ${quoteData.vat.toFixed(2)}</p>
+        <p><strong>Total:</strong> R ${quoteData.total.toFixed(2)}</p>
+        <button onclick="confirmQuote()">Confirm Quote</button>
+      `;
+      document.getElementById("quoteDetails").innerHTML = quoteDetails;
+      document.getElementById("quoteModal").style.display = "block";
+    }
+
+    function closeModal() {
+      document.getElementById("quoteModal").style.display = "none";
+    }
+
+    function confirmQuote() {
+      const user = firebase.auth().currentUser;
+      if (user) {
+        const db = firebase.database();
+        const ref = db.ref("quotes/" + user.uid);
+        ref.push(quoteData);
+
+        const confirmationMessage = `
+          <h2>Quote Confirmed!</h2>
+          <p>Your quote has been saved successfully and is now pending approval. We will get back to you shortly.</p>
+          <p><strong>Quote Details:</strong></p>
+          <ul>
+            <li><strong>Service:</strong> ${quoteData.label}</li>
+            <li><strong>Color:</strong> ${quoteData.color}</li>
+            <li><strong>Area:</strong> ${quoteData.area} m²</li>
+            <li><strong>Total:</strong> R ${quoteData.total.toFixed(2)}</li>
+          </ul>
+          <button onclick="closeModal()">Close</button>
+        `;
+        
+        document.getElementById("quoteDetails").innerHTML = confirmationMessage;
+        document.querySelector('#quoteModal button').style.display = "none"; // Hide confirm button
+      } else {
+        showCustomAlert("You need to be logged in to save the quote.");
+      }
+    }
+
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "login.html";
+      }).catch(error => {
+        showCustomAlert("Error logging out: " + error.message);
+      });
+    }
+
+    // Custom alert functions
+    function showCustomAlert(message) {
+      const alertMessage = document.getElementById("alertMessage");
+      alertMessage.textContent = message;
+      document.getElementById("customAlert").style.display = "block";
+    }
+
+    function closeCustomAlert() {
+      document.getElementById("customAlert").style.display = "none";
+    }
+
+    firebase.auth().onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("userName").textContent = user.displayName || user.email;
+      }
+    });
+  </script>
+
+</body>
+</html>

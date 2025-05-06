@@ -1,50 +1,118 @@
-<!-- login.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - The Kitchen Wrap Co.</title>
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      padding: 30px;
-      max-width: 400px;
-      margin: auto;
+      font-family: 'Arial', sans-serif;
       background: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      flex-direction: column;
+      overflow: hidden;
     }
     h2 {
+      color: #e91e63;
+      font-size: 32px;
+      margin-bottom: 20px;
       text-align: center;
     }
-    input, button {
+    .form-container {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       width: 100%;
-      padding: 10px;
-      margin: 10px 0;
+      max-width: 400px;
+      text-align: center;
     }
-    button {
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+    }
+    .btn-primary {
       background-color: #e91e63;
       color: white;
-      border: none;
-      cursor: pointer;
     }
-    button:hover {
-      background-color: #000;
+    .btn-primary:hover {
+      background-color: #d81b60;
+    }
+    .btn-google {
+      background-color: white;
+      border: 1px solid #ddd;
+      color: #4285F4;
+      font-weight: 500;
+    }
+    .btn-google img {
+      width: 20px;
+      height: 20px;
+      margin-right: 10px;
     }
     #message {
-      text-align: center;
       margin-top: 10px;
+      color: #333;
+    }
+    .logo {
+      width: 100px;
+      height: auto;
+      margin-bottom: 30px;
+    }
+    @media (max-width: 480px) {
+      .form-container {
+        padding: 20px;
+      }
+      h2 {
+        font-size: 24px;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h2>Login / Register</h2>
-  <input type="email" id="email" placeholder="Email" required>
-  <input type="password" id="password" placeholder="Password" required>
-  <button onclick="register()">Register</button>
-  <button onclick="login()">Login</button>
-  <p id="message"></p>
+  <img src="https://i.postimg.cc/HnMbx6D3/90fd9d-c33c95646a3f4ea5a67a55f456784358-mv2-1.avif" alt="Logo" class="logo">
+  
+  <h2>Welcome Back</h2>
+  
+  <div class="form-container">
+    <input type="email" id="email" placeholder="Email" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button class="btn btn-primary" onclick="register()">Register</button>
+    <button class="btn btn-primary" onclick="login()">Login</button>
+
+    <!-- Google Login Button -->
+    <button class="btn btn-google" onclick="googleLogin()">
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo">
+      SignIn with Google
+    </button>
+
+    <p id="message"></p>
+  </div>
 
   <script>
     const firebaseConfig = {
@@ -52,7 +120,7 @@
       authDomain: "pinotp-d7ef5.firebaseapp.com",
       databaseURL: "https://pinotp-d7ef5-default-rtdb.firebaseio.com",
       projectId: "pinotp-d7ef5",
-      storageBucket: "pinotp-d7ef5.firebasestorage.app",
+      storageBucket: "pinotp-d7ef5.appspot.com",
       messagingSenderId: "708458917827",
       appId: "1:708458917827:web:3af5e3544c97081bcf9776"
     };
@@ -85,7 +153,21 @@
           document.getElementById("message").innerText = err.message;
         });
     }
+
+    function googleLogin() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          document.getElementById("message").innerText = "Google login successful!";
+          window.location.href = "index.html"; // Redirect to home page or another page
+        })
+        .catch((error) => {
+          document.getElementById("message").innerText = error.message;
+        });
+    }
   </script>
 
 </body>
 </html>
+

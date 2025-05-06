@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login - The Kitchen Wrap Co.</title>
-  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
   <style>
@@ -17,7 +16,7 @@
       height: 100vh;
       margin: 0;
       flex-direction: column;
-      overflow: hidden;
+      padding: 10px;
     }
     h2 {
       color: #e91e63;
@@ -28,7 +27,7 @@
     .form-container {
       background: #ffffff;
       padding: 30px;
-      border-radius: 8px;
+      border-radius: 16px;
       box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
       width: 100%;
       max-width: 400px;
@@ -39,7 +38,7 @@
       padding: 12px;
       margin: 10px 0;
       border: 1px solid #ddd;
-      border-radius: 4px;
+      border-radius: 999px;
       font-size: 16px;
       box-sizing: border-box;
     }
@@ -48,13 +47,18 @@
       padding: 12px;
       margin: 10px 0;
       border: none;
-      border-radius: 4px;
+      border-radius: 999px;
       font-size: 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       box-sizing: border-box;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     }
     .btn-primary {
       background-color: #e91e63;
@@ -70,9 +74,14 @@
       font-weight: 500;
     }
     .btn-google img {
-      width: 20px;
-      height: 20px;
+      width: 28px;
+      height: 28px;
       margin-right: 10px;
+      border-radius: 50%;
+      transition: transform 0.3s ease;
+    }
+    .btn-google:hover img {
+      transform: scale(1.1);
     }
     #message {
       margin-top: 10px;
@@ -95,20 +104,20 @@
 </head>
 <body>
 
-  <img src="https://i.postimg.cc/HnMbx6D3/90fd9d-c33c95646a3f4ea5a67a55f456784358-mv2-1.avif" alt="Logo" class="logo">
-  
+  <img src="https://i.postimg.cc/HnMbx6D3/90fd9d-c33c95646a3f4ea5a67a55f456784358-mv2-1.avif" alt="Logo" class="logo"/>
+
   <h2>Welcome Back</h2>
-  
+
   <div class="form-container">
     <input type="email" id="email" placeholder="Email" required>
     <input type="password" id="password" placeholder="Password" required>
+    
     <button class="btn btn-primary" onclick="register()">Register</button>
     <button class="btn btn-primary" onclick="login()">Login</button>
 
-    <!-- Google Login Button -->
     <button class="btn btn-google" onclick="googleLogin()">
-      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo">
-      SignIn with Google
+      <img src="https://developers.google.com/identity/images/g-logo.png" alt="Google Logo" />
+      Login with Google
     </button>
 
     <p id="message"></p>
@@ -160,7 +169,7 @@
         .then((result) => {
           const user = result.user;
           document.getElementById("message").innerText = "Google login successful!";
-          window.location.href = "index.html"; // Redirect to home page or another page
+          window.location.href = "index.html";
         })
         .catch((error) => {
           document.getElementById("message").innerText = error.message;
@@ -170,4 +179,3 @@
 
 </body>
 </html>
-

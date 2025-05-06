@@ -372,33 +372,71 @@ function downloadPDF() {
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
-  // Add Title
-  doc.setFontSize(16);
-  doc.text("Quotation - The Kitchen Wrap Co.", 20, 20);
+  // Company Branding
+  doc.setFontSize(18);
+  doc.setFont("helvetica", "bold");
+  doc.text("The Kitchen Wrap Co.", 105, 20, null, null, "center");
 
-  // Set font for the quote details
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "normal");
+  doc.text("Official Quotation", 105, 30, null, null, "center");
+
+  // Line separator
+  doc.setLineWidth(0.5);
+  doc.line(20, 35, 190, 35);
+
+  // Quote Details
   doc.setFontSize(12);
+  let y = 45;
 
-  // Prepare the lines for the quotation details
-  const lines = [
-    `Service: ${quoteData.label}`,
-    `Color: ${quoteData.color}`,
-    `Area/Quantity: ${quoteData.area} m²`,
-    `Estimated Completion Time: ${quoteData.estimatedTime} hours`,
-    `Delivery Time: ${quoteData.deliveryTime}`,
-    `Subtotal: R ${quoteData.subtotal.toFixed(2)}`,
-    `VAT (15%): R ${quoteData.vat.toFixed(2)}`,
-    `Total: R ${quoteData.total.toFixed(2)}`,
-    `Date: ${new Date().toLocaleDateString()}`,
+  const details = [
+    { label: "Service", value: quoteData.label },
+    { label: "Color", value: quoteData.color },
+    { label: "Area/Quantity", value: `${quoteData.area} m²` },
+    { label: "Estimated Completion Time", value: `${quoteData.estimatedTime} hours` },
+    { label: "Delivery Time", value: quoteData.deliveryTime },
+    { label: "Date", value: new Date().toLocaleDateString() },
   ];
 
-  let y = 30;  // Start Y position for text
-  lines.forEach(line => {
-    doc.text(line, 20, y);
-    y += 10;  // Move Y position down for the next line
+  details.forEach(item => {
+    doc.setFont("helvetica", "bold");
+    doc.text(`${item.label}:`, 20, y);
+    doc.setFont("helvetica", "normal");
+    doc.text(item.value, 70, y);
+    y += 8;
   });
 
-  // Save the generated PDF
+  // Line separator before pricing
+  y += 4;
+  doc.line(20, y, 190, y);
+  y += 10;
+
+  // Pricing Section
+  doc.setFont("helvetica", "bold");
+  doc.text("Pricing Summary", 20, y);
+  y += 10;
+
+  doc.setFont("helvetica", "normal");
+  const pricing = [
+    { label: "Subtotal", value: `R ${quoteData.subtotal.toFixed(2)}` },
+    { label: "VAT (15%)", value: `R ${quoteData.vat.toFixed(2)}` },
+    { label: "Total", value: `R ${quoteData.total.toFixed(2)}` },
+  ];
+
+  pricing.forEach(item => {
+    doc.text(item.label, 120, y);
+    doc.text(item.value, 170, y, null, null, "right");
+    y += 8;
+  });
+
+  // Footer
+  y += 20;
+  doc.setFontSize(10);
+  doc.text("Thank you for choosing The Kitchen Wrap Co.", 105, y, null, null, "center");
+  y += 5;
+  doc.text("For questions or customizations, contact us at info@kitchenwrap.co.za", 105, y, null, null, "center");
+
+  // Save PDF
   doc.save("KitchenWrap_Quotation.pdf");
 }
 

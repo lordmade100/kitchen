@@ -13,6 +13,9 @@
   <!-- jsPDF -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -20,6 +23,7 @@
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
+      padding-bottom: 60px; /* Space for the bottom nav */
     }
     h1 {
       text-align: center;
@@ -120,11 +124,38 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: #e91e63;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 0;
+      box-shadow: 0px -2px 5px rgba(0, 0, 0, 0.2);
+    }
+    .bottom-nav a {
+      text-align: center;
+      color: white;
+      font-size: 18px;
+      text-decoration: none;
+    }
+    .bottom-nav a i {
+      font-size: 24px;
+      display: block;
+      margin-bottom: 5px;
+    }
+    .bottom-nav a:hover {
+      color: #000;
+    }
   </style>
 </head>
 <body>
 
- <!-- Pink App Bar with Logo, User, Logout -->
+  <!-- Pink App Bar with Logo, User, Logout -->
 <header style="display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background-color: #e91e63; color: white; position: sticky; top: 0; z-index: 1000;">
   <div style="display: flex; align-items: center; gap: 10px;">
     <div style="background: white; border-radius: 50%; padding: 2px;">
@@ -217,7 +248,7 @@
         window.location.href = "login.html";
       }
     });
-    
+
     function previewImage(event) {
         const file = event.target.files[0];
         const reader = new FileReader();
@@ -229,9 +260,7 @@
         if (file) reader.readAsDataURL(file);
     }
 
-
     let quoteData = {};
-    const logoBase64 = ""; // Optional: insert base64 logo
 
     function toggleCustomColorField() {
       const customField = document.getElementById("customColorField");
@@ -310,43 +339,18 @@
 
     function confirmQuote() {
       const user = firebase.auth().currentUser;
-      if (user) {
-        const db = firebase.database();
-        const ref = db.ref("quotes/" + user.uid);
-        ref.push(quoteData);
-
-        const confirmationMessage = `
-          <h2>Quote Confirmed!</h2>
-          <p>Your quote has been saved successfully and is now pending approval. We will get back to you shortly.</p>
-          <p><strong>Quote Details:</strong></p>
-          <ul>
-            <li><strong>Service:</strong> ${quoteData.label}</li>
-            <li><strong>Color:</strong> ${quoteData.color}</li>
-            <li><strong>Area:</strong> ${quoteData.area} m²</li>
-            <li><strong>Total:</strong> R ${quoteData.total.toFixed(2)}</li>
-          </ul>
-          <button onclick="closeModal()">Close</button>
-        `;
-        
-        document.getElementById("quoteDetails").innerHTML = confirmationMessage;
-        document.querySelector('#quoteModal button').style.display = "none"; // Hide confirm button
-      } else {
-        showCustomAlert("You need to be logged in to save the quote.");
-      }
-    }
-
-    function logout() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "login.html";
-      }).catch(error => {
-        showCustomAlert("Error logging out: " + error.message);
+      const quoteRef = firebase.database().ref("quotes").push();
+      quoteRef.set({
+        ...quoteData,
+        user: user.displayName || user.email,
+        uid: user.uid
       });
+      closeModal();
+      showCustomAlert("Quote saved successfully.");
     }
 
-    // Custom alert functions
     function showCustomAlert(message) {
-      const alertMessage = document.getElementById("alertMessage");
-      alertMessage.textContent = message;
+      document.getElementById("alertMessage").textContent = message;
       document.getElementById("customAlert").style.display = "block";
     }
 
@@ -354,12 +358,19 @@
       document.getElementById("customAlert").style.display = "none";
     }
 
-    firebase.auth().onAuthStateChanged(user => {
-      if (user) {
-        document.getElementById("userName").textContent = user.displayName || user.email;
-      }
-    });
+    function logout() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "login.html";
+      });
+    }
   </script>
+
+  <!-- Bottom Navigation -->
+  <div class="bottom-nav">
+    <a href="#orders"><i class="fas fa-box"></i> Orders</a>
+    <a href="#services"><i class="fas fa-cogs"></i> Services</a>
+    <a href="#profile"><i class="fas fa-user"></i> Profile</a>
+  </div>
 
 </body>
 </html>

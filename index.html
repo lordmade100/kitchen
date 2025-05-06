@@ -212,15 +212,19 @@
   </div>
 
   <button onclick="calculateQuote()">Get Quote</button>
+  
 
-  <!-- Modal -->
-  <div id="quoteModal">
-    <div class="modal-content">
-      <span class="close" onclick="closeModal()">&times;</span>
-      <h2>Quotation Details</h2>
-      <div id="quoteDetails"></div>
-    </div>
+ <!-- Modal -->
+<div id="quoteModal">
+  <div class="modal-content">
+    <span class="close" onclick="closeModal()">&times;</span>
+    <h2>Quotation Details</h2>
+    <div id="quoteDetails"></div>
+    
+    <button onclick="downloadPDF()">Download PDF</button> <!-- Added PDF download button -->
   </div>
+</div>
+
 
   <!-- Custom Alert -->
   <div id="customAlert">
@@ -363,6 +367,43 @@
         window.location.href = "login.html";
       });
     }
+
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  // Add Title
+  doc.setFontSize(16);
+  doc.text("Quotation - The Kitchen Wrap Co.", 20, 20);
+
+  // Set font for the quote details
+  doc.setFontSize(12);
+
+  // Prepare the lines for the quotation details
+  const lines = [
+    `Service: ${quoteData.label}`,
+    `Color: ${quoteData.color}`,
+    `Area/Quantity: ${quoteData.area} m²`,
+    `Estimated Completion Time: ${quoteData.estimatedTime} hours`,
+    `Delivery Time: ${quoteData.deliveryTime}`,
+    `Subtotal: R ${quoteData.subtotal.toFixed(2)}`,
+    `VAT (15%): R ${quoteData.vat.toFixed(2)}`,
+    `Total: R ${quoteData.total.toFixed(2)}`,
+    `Date: ${new Date().toLocaleDateString()}`,
+  ];
+
+  let y = 30;  // Start Y position for text
+  lines.forEach(line => {
+    doc.text(line, 20, y);
+    y += 10;  // Move Y position down for the next line
+  });
+
+  // Save the generated PDF
+  doc.save("KitchenWrap_Quotation.pdf");
+}
+
+
+
   </script>
 
   <!-- Bottom Navigation -->
